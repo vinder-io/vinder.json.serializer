@@ -1,0 +1,49 @@
+name: publish package
+
+on:
+  push:
+    branches:
+      - main
+      - development
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: install dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - name: run tests
+        run: npm test
+
+      - name: bump version
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            npm version minor -m "ci: bump minor version to %s"
+          elif [ "${{ github.ref_name }}" = "development" ]; then
+            npm version patch -m "ci: bump patch version to %s"
+          fi
+
+      - name: publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: push new version back to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git push --follow-tags origin ${{ github.ref_name }}
