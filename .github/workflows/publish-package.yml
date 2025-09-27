@@ -29,6 +29,13 @@ jobs:
       - name: run tests
         run: npm test
 
+      - name: prepare git for version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "ci: prepare repository for version bump" || echo "no changes to commit"
+
       - name: bump version
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
