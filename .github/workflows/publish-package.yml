@@ -42,8 +42,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: push new version back to repo
+      - name: prepare git for version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git push --follow-tags origin ${{ github.ref_name }}
+          git add -A
+          git commit -m "ci: prepare repository for version bump" || echo "no changes to commit"
